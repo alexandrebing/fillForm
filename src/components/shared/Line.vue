@@ -1,44 +1,41 @@
 <template>
-    <tr>
-        <th><p>{{inputValues.activity}}</p></th>
-        <th><input class="text-input" type="text" v-model="currentActivity.activity" @change="changed()"/></th>
-        <th><input class="num-input" type="number" :min="checkMin" :max="maxValue" v-model.lazy="currentActivity.start" @change="changed()"/></th>
-        <th><input class="num-input" type="number" :min="minValue" :max="24" v-model.lazy="currentActivity.end" @change="changed()"/></th>
-        <th><div class="remove" @click="removeActivity()">x</div></th>
-        <th><div class="check" @click="changeName()">?</div></th>
-    </tr>    
+        <tr>
+                <th><input class="input text-input" type="text" v-model="inputValues.activity"></th>
+                <th><input class="input num-input" type="number" :min="checkMin" :max="maxValue" v-model.lazy="inputValues.start" @change="inputChanged()"></th>
+                <th><input class="input num-input" type="number" :min="minValue" :max="checkMax" v-model.lazy="inputValues.end" @change="inputChanged()"></th>
+                <th><my-button titulo="x" estilo="remove" @clicked="removeActivity()"/></th>
+                <!--<th><div class="mark" :class="isValid"></div></th>-->
+                <th>
+                    <img src="../icons/red-warning.png" alt="warning" height="25px" v-if="!isValid">
+                    <img src="../icons/green-check.png" alt="check" height="25px" v-if="isValid">
+                </th>
+        </tr>
 </template>
 
 <script>
 import Input from './Input';
+import Button from './Button'
 export default {
     props:{
         inputValues:{
-            required:true,
+            required: true,
             type: Object
         },
-        previousActivity:{
-            type:Object
+        previousActivity: {
+            type: Object
         },
-        index:{
-            required: true,
-            type: Number
-        }
-    },
-
-    data: () => {
-        return{
-            currentActivity: Object
-
+        nextActivity:{
+            type: Object
         }
     },
 
     components:{
-        'my-input': Input
+        'my-input': Input,
+        'my-button': Button
     },
 
     mounted(){
-        this.currentActivity = this.inputValues
+
     },
     
     computed:{
@@ -49,6 +46,13 @@ export default {
             }
             return 0
 
+        },
+
+        checkMax(){
+            if(this.nextActivity){
+                return this.nextActivity.start
+            }
+            return 24
         },
 
         maxValue(){
@@ -62,22 +66,45 @@ export default {
 
         changeName(){
             this.inputValues.activity = "Modificado"
+        },
+
+        isValid(){
+            if (this.inputValues.valid){
+                return true
+            }
+            return false
         }
     },
 
     methods:{
-        changed(){
-            console.log(this.index)
-            debugger
-            this.currentActivity.position = this.index
-            debugger
-            this.$emit('activityUpdated', this.currentActivity)
+        removeActivity(){
+            this.$emit("activityRemoved")
         },
 
-        removeActivity(){
-            this.$emit("activityRemotion", this.index)
-            document.getElementById("in1").value = this.currentActivity.activity;
+        inputChanged(){
+            this.$emit("inputChanged")
+            this.checkValidity()
         },
+
+        checkValidity(){ //mudar para o computed?
+            let equalPrevious = true
+            let equalNext = true
+            if(this.previousActivity){
+                equalPrevious = (this.inputValues.start == this.previousActivity.end)
+            } 
+            if(this.nextActivity){
+                equalNext = this.inputValues.end == this.nextActivity.start
+            }
+
+            if(equalPrevious && equalNext){
+                this.inputValues.valid = true
+            } else {
+                this.inputValues.valid = false
+            }
+                
+
+        }
+       
     }
 
     
@@ -91,8 +118,20 @@ input{
     border: none;
 }
 
-tr{
-    margin-top: 10px;
+.mark{
+    margin: 0 auto;
+    border:solid white 1px;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+}
+
+.valid{
+    background-color: rgba(0, 128, 248);
+}
+
+.invalid{
+    background-color: rgb(184, 33, 33);
 }
 
 .text-input{
@@ -102,36 +141,6 @@ tr{
 .num-input{
     width: 80px;
 
-}
-
-.remove{
-    background-color: rgb(184, 33, 33);
-    color: white;
-    text-align: center;
-    line-height: 28px;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.check{
-    background-color: rgb(11, 57, 207);
-    color: white;
-    text-align: center;
-    line-height: 32px;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.check:hover{
-    background-color:rgb(21, 46, 131);
-}
-
-.remove:hover{
-    background-color: rgb(109, 32, 32);
 }
 
 </style>

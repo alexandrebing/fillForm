@@ -1,99 +1,144 @@
 <template>
     <div>
-        <h1>Formulário</h1>
-        <carousel :per-page="1">
-            <slide class="carousel-wrapper" :key="dia" v-for="dia in dias">
-                <my-slide :titulo=dia 
-                          :inputValues=activitiesByDay[dia] 
-                          :activities=activitiesByDay[dia].length 
-                          @listChanged="updateList($event)"
-                          @activityAdded="addActivity($event)"
-                          @activityRemotion="removeActivity($event)"></my-slide>
-            </slide>
-        </carousel>
+
+        <div class="centralized">
+            <Carousel :perPage="1">
+                <Slide :key="index" v-for="index in activities.length">
+                    <day :day="days[index-1]"
+                    :dayIndex="index-1"
+                    :activities="activities[index-1]" 
+                    @activityAdded="addActivity($event)"
+                    @activityRemoved="removeActivity($event)"
+                    @copyPreviousDay="copyPreviousDay($event)"/>
+
+                </Slide>
+            </Carousel>
+           <!--
+            <day :key="activity" v-for="activity in activities.length" 
+                :activities="activities[activity-1]"
+                :day="days[activity-1]"
+                :dayIndex="activity-1"
+                @activityAdded="addActivity($event)"
+                @activityRemoved="removeActivity($event)" />
+            -->
+
+            <button @click="info()">info</button>    
+        </div>
+        
     </div>
 </template>
 <script>
 import { Carousel, Slide} from 'vue-carousel';
-import MySlide from '../slide/MySlide';
+import DayActivities from '../shared/DayActivities';
 import Button from '../shared/Button';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
 export default {
-    data: () => {
-        return{
-            dias: ['Dia 1', 'Dia 2', 'Dia 3', 'Dia 4'],
-            activitiesByDay:{
-                            'Dia 1':[{
-                                    activity: "Dormir",
-                                    start: 10,
-                                    end: 12
-                                },{
-                                    activity: "Trabalhar",
-                                    start: 12,
-                                    end: 18
-                                },{
-                                    activity: "Comer",
-                                    start: 18,
-                                    end: 22
-                                },{
-                                    activity: "Dormir",
-                                    start: 22,
-                                    end: 24
-                                }
-                            ], 
-                            'Dia 2':[
-                            ],
-                            'Dia 3':[{
-                                    activity: "Dormir",
-                                    start: 10,
-                                    end: 12
-                                }, {
-                                    activity:"Trabalhar",
-                                    start: 10,
-                                    end: 18
-                                }
-                            ],
-                            'Dia 4':[]
-            }
-        }
-    },
+
     components: {
         Carousel,
         Slide,
-        'my-slide': MySlide,
+        'day': DayActivities,
         'my-button': Button
     },
 
+    data: ()=>{
+        return{
+            days:["Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sábado", "Domingo"],
+            activities:[[{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }],[{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }],[{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }],
+            [{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }],
+            [{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }],
+            [{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }],
+            [{
+                activity: "Insira sua atividade",
+                start: 0,
+                end: 1,
+                valid: true
+            }]
+            ]
+        }
+    },
+
+    computed:{
+
+    },
+
     methods:{
-        info(){
-            console.log(this.activitiesByDay)
-        },
-
         addActivity(data){
-            let newActivity = {
-                activity: data.activity,
-                start: data.start,
-                end: data.end
-            }
-            this.activitiesByDay[data.day].push(newActivity)
-
-        },
-
-        updateList(updatedActivity){
-            console.log("A lista foi atualizada");
-            console.log(updatedActivity)
-            this.activitiesByDay[updatedActivity.day][updatedActivity.position]={
-                activity: updatedActivity.activity,
-                start: updatedActivity.start,
-                end: updatedActivity.end
-            }
+            let index = data.index
+            if(!data.activity)
+                data.activity = "Insira sua atividade"
+            this.activities[index].push({
+                activity:data.activity,
+                start: data.newActivityStart,
+                end: data.newActivityEnd,
+                valid: true
+                }
+            )
         },
 
         removeActivity(data){
-            let day = data.day
-            let pos = data.position
-            this.activitiesByDay[day].splice(pos, 1)
-            console.log(this.activitiesByDay[day])
+            let dayIndex = data.day
+            let positionIndex = data.position
+            console.log(data)
+            this.activities[dayIndex].splice(positionIndex, 1)
+        },
+
+        copyPreviousDay(dayIndex){
+            console.log(dayIndex)
+            if(this.activities[dayIndex-1]){
+                this.copyAllActivities(dayIndex, dayIndex - 1)
+            }
+        },
+
+        copyAllActivities(currentDayIndex, previousDayIndex){
+            let activitiesLength = this.activities[currentDayIndex].length
+            this.activities[currentDayIndex].splice(0,activitiesLength)  
+            for(let i = 0; i < this.activities[previousDayIndex].length; i++){
+                let activityToAdd = {
+                    activity: this.activities[previousDayIndex][i].activity,
+                    newActivityStart: this.activities[previousDayIndex][i].start,
+                    newActivityEnd: this.activities[previousDayIndex][i].end,
+                    index: currentDayIndex
+                }    
+                this.addActivity(activityToAdd)
+            }
+        },
+
+        info(){
+            console.log(this.activities)
         }
+     
     }
     
 }
@@ -102,6 +147,10 @@ export default {
 .carousel-wrapper {
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.centralized{
+    margin: 0 auto;
 }
 
 </style>

@@ -5,6 +5,7 @@
             <p>form</p>
             <child-component :names="names" @removeItem="remove($event)"/>
             <button @click="add()">add</button>
+            <button @click="consult()">consult list</button>
         </div>
     </div>
 </template>
@@ -13,10 +14,15 @@
  export default {
      data: ()=>{
          return{
-             names: [{
+             names: [[{
                         nome:"Inserir nome",
-                        idade: 0
-                     }]
+                        idade: 0,
+                        sexo: ""
+                     }],[{
+                         nome:"",
+                         idade: 0,
+                         sexo: "o que ele quiser"
+                     }]]
          }
      },
 
@@ -32,6 +38,10 @@
 
          add(){
              this.names.push({nome: "Inserir nome", idade: 0})
+         },
+
+         consult(){
+             console.log(this.names)
          }
      }
      

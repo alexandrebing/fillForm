@@ -1,8 +1,12 @@
 <template>
     <div>
-        <input type="text" v-model.lazy="name.nome" >
-        <button @click="remove(name-1)">remove</button>
-        <button @click="modify(name-1)">modify</button>
+        <div :key="item" v-for="item in name.length">
+            <input type="text" v-model.lazy="name[item-1].nome" >
+            <input type="number" v-model.lazy="name[item-1].idade">
+            <input type="text" v-model="name[item-1].sexo">
+            <button @click="remove()">remove</button>
+            <button @click="modify(name-1)">modify</button>
+        </div>
     </div>
 </template>
 
@@ -11,7 +15,7 @@ export default {
     props: {
         name: {
             required: true,
-            type: Object
+            type: Array
         },
         index:{
             required: true,
@@ -21,8 +25,8 @@ export default {
     },
 
     methods:{
-         remove(item){
-            this.$emit("remove", item)
+         remove(){
+            this.$emit("remove", this.index)
         },
     }
     
